@@ -21,12 +21,13 @@ function DashboardPage() {
   };
 
   if (!user) {
-    return <div>Loading...</div>;
+    return <div className="dashboard-loading">Loading...</div>;
   }
 
-  // ✅ Safe fallbacks
+  // ✅ Provider (never hard-coded)
   const provider = user.provider || "Unknown";
 
+  // ✅ Profile image with safe fallbacks
   const profileImage =
     user.picture ||
     (provider === "GitHub"

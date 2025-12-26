@@ -19,29 +19,48 @@ function FacebookCallbackPage() {
     }
 
     if (code) {
-      // For frontend-only approach, store basic Facebook auth info
-      const facebookUser = {
-        provider: "Facebook",
-        code: code,
-        email: "facebook-user@example.com",
-        name: "Facebook User",
-        picture:
-          "https://platform-lookaside.fbsbx.com/platform/profilepic/?asid=0&height=50&width=50",
-      };
-
-      localStorage.setItem("user", JSON.stringify(facebookUser));
-      setLoading(false);
-
-      // Redirect to dashboard after 1 second
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
+      exchangeCodeForToken(code);
     } else {
       setError("No authorization code received");
       setLoading(false);
       setTimeout(() => navigate("/all"), 2000);
     }
   }, [searchParams, navigate]);
+
+  const exchangeCodeForToken = async (code) => {
+    try {
+      // Call backend to exchange code for user data
+      const response = await fetch("http://localhost:5000/api/auth/facebook", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.user) {
+        // Save user data to localStorage
+        localStorage.setItem("user", JSON.stringify(data.user));
+        setLoading(false);
+
+        // Redirect to dashboard
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1000);
+      } else {
+        setError("Failed to get user data");
+        setLoading(false);
+        setTimeout(() => navigate("/all"), 2000);
+      }
+    } catch (err) {
+      console.error("Error exchanging code:", err);
+      setError("Authentication error: " + err.message);
+      setLoading(false);
+      setTimeout(() => navigate("/all"), 2000);
+    }
+  };
 
   return (
     <div

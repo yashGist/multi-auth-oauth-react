@@ -5,8 +5,9 @@ import "../styles/GoogleAuthPage.css";
 function GoogleAuthPage() {
   const navigate = useNavigate();
 
-  const handleLoginSuccess = (credentialResponse) => {
+  const handleGoogleSuccess = (credentialResponse) => {
     const token = credentialResponse.credential;
+
     const base64Url = token.split(".")[1];
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
@@ -16,8 +17,16 @@ function GoogleAuthPage() {
         .join("")
     );
 
-    const userData = JSON.parse(jsonPayload);
-    localStorage.setItem("user", JSON.stringify(userData));
+    const decodedUser = JSON.parse(jsonPayload);
+
+    const googleUser = {
+      provider: "Google",
+      name: decodedUser.name,
+      email: decodedUser.email,
+      picture: decodedUser.picture,
+    };
+
+    localStorage.setItem("user", JSON.stringify(googleUser));
     navigate("/dashboard");
   };
 
@@ -32,8 +41,9 @@ function GoogleAuthPage() {
 
         <div className="auth-form">
           <p>Sign in with your Google account</p>
+
           <GoogleLogin
-            onSuccess={handleLoginSuccess}
+            onSuccess={handleGoogleSuccess}
             onError={handleLoginError}
           />
         </div>

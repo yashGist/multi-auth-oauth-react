@@ -6,41 +6,77 @@ function GitHubCallbackPage() {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [attempts, setAttempts] = useState(0);
 
   useEffect(() => {
     const code = searchParams.get("code");
     const errorParam = searchParams.get("error");
 
     if (errorParam) {
-      setError("GitHub authentication failed");
+      setError("GitHub authentication was cancelled");
       setLoading(false);
       setTimeout(() => navigate("/all"), 2000);
       return;
     }
 
     if (!code) {
-      setError("No authorization code received");
+      setError("No authorization code received from GitHub");
       setLoading(false);
       setTimeout(() => navigate("/all"), 2000);
       return;
     }
 
-    // ✅ Standardized user object (same shape as Google & Facebook)
-    const githubUser = {
-      name: "GitHub User",
-      email: "github-user@example.com",
-      picture:
-        "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-      provider: "GitHub",
-    };
+    // 🔒 PREVENT DOUBLE CALL (VERY IMPORTANT)
+    if (attempts > 0) return;
 
-    localStorage.setItem("user", JSON.stringify(githubUser));
-    setLoading(false);
+    setAttempts(1);
+    exchangeCodeForToken(code);
+  }, []); // ⬅️ EMPTY dependency array ON PURPOSE
 
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 1000);
-  }, [searchParams, navigate]);
+  const exchangeCodeForToken = async (code) => {
+    try {
+      console.log(
+        "Attempting to exchange code:",
+        code.substring(0, 10) + "..."
+      );
+
+      const response = await fetch("http://localhost:5000/api/auth/github", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code }),
+      });
+
+      console.log("Response status:", response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Backend error:", errorData);
+        throw new Error(errorData.message || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Received user data:", data);
+
+      if (data.success && data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        setLoading(false);
+
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 500);
+      } else {
+        throw new Error("Invalid response format");
+      }
+    } catch (err) {
+      console.error("Full error:", err);
+      setError(`Authentication error: ${err.message}`);
+      setLoading(false);
+
+      setTimeout(() => navigate("/all"), 3000);
+    }
+  };
 
   return (
     <div
@@ -68,11 +104,13 @@ function GitHubCallbackPage() {
             <h2 style={{ color: "#333", marginBottom: "20px" }}>
               Authenticating with GitHub...
             </h2>
-            <p style={{ color: "#666" }}>Please wait...</p>
+            <p style={{ color: "#666" }}>
+              Please wait while we verify your credentials
+            </p>
             <div
               style={{
-                width: "30px",
-                height: "30px",
+                width: "40px",
+                height: "40px",
                 border: "4px solid #f3f3f3",
                 borderTop: "4px solid #333",
                 borderRadius: "50%",
@@ -86,11 +124,11 @@ function GitHubCallbackPage() {
         {error && (
           <>
             <h2 style={{ color: "#d32f2f", marginBottom: "20px" }}>
-              Authentication Error
+              ⚠️ Authentication Error
             </h2>
-            <p style={{ color: "#666" }}>{error}</p>
+            <p style={{ color: "#666", marginBottom: "10px" }}>{error}</p>
             <p style={{ color: "#999", fontSize: "12px" }}>
-              Redirecting back...
+              Redirecting back in a moment...
             </p>
           </>
         )}

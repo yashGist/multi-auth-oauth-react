@@ -16,16 +16,8 @@ function AllAuthPage({ githubClientId, facebookClientId }) {
         .join("")
     );
 
-    const googleUser = JSON.parse(jsonPayload);
-
-    const user = {
-      provider: "Google", // ✅ ADD THIS
-      name: googleUser.name,
-      email: googleUser.email,
-      picture: googleUser.picture,
-    };
-
-    localStorage.setItem("user", JSON.stringify(user));
+    const userData = JSON.parse(jsonPayload);
+    localStorage.setItem("user", JSON.stringify(userData));
     navigate("/dashboard");
   };
 
@@ -37,14 +29,7 @@ function AllAuthPage({ githubClientId, facebookClientId }) {
 
   const handleFacebookLogin = () => {
     const redirectUri = "http://localhost:5173/facebook-callback";
-
-    const facebookAuthUrl =
-      `https://www.facebook.com/v18.0/dialog/oauth` +
-      `?client_id=${facebookClientId}` +
-      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      `&response_type=code` +
-      `&scope=public_profile`; // ✅ email REMOVED
-
+    const facebookAuthUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${facebookClientId}&redirect_uri=${redirectUri}&scope=email,public_profile`;
     window.location.href = facebookAuthUrl;
   };
 

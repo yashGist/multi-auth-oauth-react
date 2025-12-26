@@ -1,17 +1,19 @@
+import { useNavigate } from "react-router-dom";
 import "../styles/FacebookAuthPage.css";
 
-function FacebookAuthPage() {
-  const facebookClientId = import.meta.env.VITE_FACEBOOK_CLIENT_ID;
+function FacebookAuthPage({ facebookClientId }) {
+  const navigate = useNavigate();
 
   const handleFacebookLogin = () => {
-    const redirectUri = "http://localhost:5173/facebook-callback";
+    const redirectUri = encodeURIComponent(
+      "http://localhost:5173/facebook-callback"
+    );
 
     const facebookAuthUrl =
       `https://www.facebook.com/v18.0/dialog/oauth` +
       `?client_id=${facebookClientId}` +
-      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      `&response_type=code` +
-      `&scope=public_profile`; // ✅ EMAIL REMOVED
+      `&redirect_uri=${redirectUri}` +
+      `&scope=public_profile`; // ✅ FIXED
 
     window.location.href = facebookAuthUrl;
   };
@@ -22,14 +24,17 @@ function FacebookAuthPage() {
         <h1>Facebook Authentication</h1>
 
         <div className="auth-form">
-          <p>Sign in with Facebook</p>
+          <p>Sign in with your Facebook account</p>
+          <p style={{ fontSize: "12px", color: "#999", marginBottom: "20px" }}>
+            (Demo Mode - Production coming soon)
+          </p>
           <button className="facebook-btn" onClick={handleFacebookLogin}>
             Sign in with Facebook
           </button>
         </div>
 
         <div className="back-link">
-          <a href="/all">← Back</a>
+          <a href="/all">← Back to All Auth Methods</a>
         </div>
       </div>
     </div>
