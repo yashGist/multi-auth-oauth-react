@@ -7,12 +7,10 @@ function DashboardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get user data from localStorage
     const userData = localStorage.getItem("user");
     if (userData) {
       setUser(JSON.parse(userData));
     } else {
-      // If no user data, redirect to all auth
       navigate("/all");
     }
   }, [navigate]);
@@ -26,30 +24,48 @@ function DashboardPage() {
     return <div>Loading...</div>;
   }
 
+  // ✅ Safe fallbacks
+  const provider = user.provider || "Unknown";
+
+  const profileImage =
+    user.picture ||
+    (provider === "GitHub"
+      ? "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+      : provider === "Facebook"
+      ? "https://www.facebook.com/images/fb_icon_325x325.png"
+      : "https://www.gstatic.com/images/branding/product/1x/avatar_circle_blue_512dp.png");
+
   return (
     <div className="dashboard-container">
       <div className="dashboard-card">
         <h1>Dashboard</h1>
 
         <div className="user-profile">
-          <img src={user.picture} alt={user.name} className="profile-pic" />
-          <h2>Welcome, {user.name}!</h2>
-          <p className="email">{user.email}</p>
+          <img
+            src={profileImage}
+            alt={user.name || "User"}
+            className="profile-pic"
+          />
+          <h2>Welcome, {user.name || "User"}!</h2>
+          <p className="email">{user.email || "Email not available"}</p>
         </div>
 
         <div className="user-details">
           <h3>Your Information</h3>
+
           <div className="detail-row">
             <span className="label">Name:</span>
-            <span className="value">{user.name}</span>
+            <span className="value">{user.name || "N/A"}</span>
           </div>
+
           <div className="detail-row">
             <span className="label">Email:</span>
-            <span className="value">{user.email}</span>
+            <span className="value">{user.email || "N/A"}</span>
           </div>
+
           <div className="detail-row">
             <span className="label">Provider:</span>
-            <span className="value">Google</span>
+            <span className="value">{provider}</span>
           </div>
         </div>
 

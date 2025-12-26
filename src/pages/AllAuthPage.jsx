@@ -16,8 +16,16 @@ function AllAuthPage({ githubClientId, facebookClientId }) {
         .join("")
     );
 
-    const userData = JSON.parse(jsonPayload);
-    localStorage.setItem("user", JSON.stringify(userData));
+    const googleUser = JSON.parse(jsonPayload);
+
+    const user = {
+      provider: "Google", // ✅ ADD THIS
+      name: googleUser.name,
+      email: googleUser.email,
+      picture: googleUser.picture,
+    };
+
+    localStorage.setItem("user", JSON.stringify(user));
     navigate("/dashboard");
   };
 
